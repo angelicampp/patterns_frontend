@@ -160,7 +160,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterForm) {
           {/* Full Name Field */}
           <div className="space-y-2">
             <Label htmlFor="fullName" className="text-sm font-medium text-foreground">
-              Nombre Completo *
+              Nombre *
             </Label>
             <Input
               id="fullName"
@@ -176,15 +176,51 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterForm) {
             )}
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="fullName" className="text-sm font-medium text-foreground">
+              Apellido *
+            </Label>
+            <Input
+              id="fullName"
+              type="text"
+              placeholder="Ingresa el Apellido"
+              value={fullName}
+              onChange={handleFullNameChange}
+              className={`h-12 border-gray-200 focus:ring-0 shadow-none rounded-lg bg-white focus:border-[#3F3FF3] 
+              ${fullNameError ? "border-red-500" : ""}`}
+            />
+            {fullNameError && (
+              <p className="text-red-500 text-xs mt-1">{fullNameError}</p>
+            )}
+          </div>
+
           {/* Username/Email Field */}
           <div className="space-y-2">
             <Label htmlFor="username" className="text-sm font-medium text-foreground">
-              Email o Nombre de Usuario *
+              Email *
             </Label>
             <Input
               id="username"
               type="text"
-              placeholder="usuario o usuario@escuela.com"
+              placeholder="Name@escuela.com"
+              value={username}
+              onChange={handleUsernameChange}
+              className={`h-12 border-gray-200 focus:ring-0 shadow-none rounded-lg bg-white focus:border-[#3F3FF3] 
+              ${usernameError ? "border-red-500" : ""}`}
+            />
+            {usernameError && (
+              <p className="text-red-500 text-xs mt-1">{usernameError}</p>
+            )}
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="username" className="text-sm font-medium text-foreground">
+              Nombre de Usuario *
+            </Label>
+            <Input
+              id="username"
+              type="text"
+              placeholder="Nombre de usuario"
               value={username}
               onChange={handleUsernameChange}
               className={`h-12 border-gray-200 focus:ring-0 shadow-none rounded-lg bg-white focus:border-[#3F3FF3] 

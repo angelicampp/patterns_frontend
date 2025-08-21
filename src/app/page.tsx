@@ -8,17 +8,27 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Eye, EyeOff, ArrowLeft } from "lucide-react"
 
-
 export default function LoginPage() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [currentView, setCurrentView] = useState<"login" | "register" | "forgot">("login")
+  
+  // Estados para Login
   const [username, setUsername] = useState("")
   const [usernameError, setUsernameError] = useState("")
   const [password, setPassword] = useState("")
   const [passwordError, setPasswordError] = useState("")
+  
+  // Estados específicos para Registro
+  const [name, setName] = useState("")
+  const [nameError, setNameError] = useState("")
+  const [email, setEmail] = useState("")
+  const [emailError, setEmailError] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [confirmPasswordError, setConfirmPasswordError] = useState("")
 
+  // Validaciones para Login
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setUsername(value)
@@ -43,15 +53,79 @@ export default function LoginPage() {
     }
   }
 
-  const isFormInvalid =
-    !username || !password || usernameError !== "" || passwordError !== ""
+  // Validaciones específicas para Registro
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setName(value)
+
+    if (value.length > 0 && value.length < 2) {
+      setNameError("El nombre debe tener al menos 2 caracteres")
+    } else if (value.length > 50) {
+      setNameError("El nombre no puede exceder 50 caracteres")
+    } else {
+      setNameError("")
+    }
+  }
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setEmail(value)
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (value.length > 0 && !emailRegex.test(value)) {
+      setEmailError("Ingresa un email válido")
+    } else {
+      setEmailError("")
+    }
+  }
+
+  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setConfirmPassword(value)
+
+    if (value.length > 0 && value !== password) {
+      setConfirmPasswordError("Las contraseñas no coinciden")
+    } else if (value.length > 0 && value.length < 4) {
+      setConfirmPasswordError("La contraseña debe tener al menos 4 caracteres")
+    } else {
+      setConfirmPasswordError("")
+    }
+  }
+
+  // Validación del formulario según la vista actual
+  const isLoginFormInvalid = 
+    currentView === "login" && (!username || !password || usernameError !== "" || passwordError !== "")
+  
+  const isRegisterFormInvalid = 
+    currentView === "register" && (
+      !name || !email || !password || !confirmPassword || 
+      nameError !== "" || emailError !== "" || passwordError !== "" || confirmPasswordError !== ""
+    )
+  
+  const isForgotFormInvalid = 
+    currentView === "forgot" && (!email || emailError !== "")
+
+  const isFormInvalid = isLoginFormInvalid || isRegisterFormInvalid || isForgotFormInvalid
   
   const handleLogin = () => {
     router.push("/dashboard")
   }
 
   const handleRegister = () => {
+    // lógica de registro
+    console.log("Registro:", { name, email, password })
     router.push("/dashboard")
+  }
+
+  const handleSubmit = () => {
+    if (currentView === "login") {
+      handleLogin()
+    } else if (currentView === "register") {
+      handleRegister()
+    } else if (currentView === "forgot") {
+      // restablecer contraseña
+      console.log("Restablecer contraseña para:", email)
+    }
   }
 
   return (
@@ -123,49 +197,112 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-4">
+              {/* Campo Nombre Completo - Solo para registro */}
               {currentView === "register" && (
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-sm font-medium text-foreground">
-                    Nombre Completo
+                    Nombre *
                   </Label>
                   <Input
                     id="name"
                     type="text"
-                    defaultValue=""
-                    placeholder="John Doe"
-                    className="h-12 border-gray-200 focus:ring-0 shadow-none rounded-lg bg-white focus:border-[#3F3FF3]"
+                    placeholder="Ej: Juan"
+                    value={name}
+                    onChange={handleNameChange}
+                    className={`h-12 border-gray-200 focus:ring-0 shadow-none rounded-lg bg-white focus:border-[#3F3FF3]
+                      ${nameError ? "border-red-500" : ""}`}
                   />
+                  {nameError && (
+                    <p className="text-red-500 text-xs mt-1">{nameError}</p>
+                  )}
+                
+                  <Label htmlFor="apellido" className="text-sm font-medium text-foreground">
+                    Apellido *
+                  </Label>
+                  <Input
+                    id="apellido"
+                    type="text"
+                    placeholder="Ej: Pérez"
+                    value={name}
+                    onChange={handleNameChange}
+                    className={`h-12 border-gray-200 focus:ring-0 shadow-none rounded-lg bg-white focus:border-[#3F3FF3]
+                      ${nameError ? "border-red-500" : ""}`}
+                  />
+                  {nameError && (
+                    <p className="text-red-500 text-xs mt-1">{nameError}</p>
+                  )}
+
+                  <Label htmlFor="username" className="text-sm font-medium text-foreground">
+                    Nombre de usuario *
+                  </Label>
+                  <Input
+                    id="username"
+                    type="text"
+                    placeholder="JuanPerez001"
+                    value={username}
+                    onChange={handleUsernameChange}
+                    className={`h-12 border-gray-200 focus:ring-0 shadow-none rounded-lg bg-white focus:border-[#3F3FF3]
+                      ${nameError ? "border-red-500" : ""}`}
+                  />
+                  {nameError && (
+                    <p className="text-red-500 text-xs mt-1">{nameError}</p>
+                  )}
                 </div>
               )}
 
-              <div className="space-y-2">
-                <Label htmlFor="username" className="text-sm font-medium text-foreground">
-                  Email o Nombre de Usuario
-                </Label>
-                <Input
-                  id="username"
-                  type="text"
-                  placeholder="user o user@school.com"
-                  value={username}
-                  onChange={handleUsernameChange}
-                  className={`h-12 border-gray-200 focus:ring-0 shadow-none rounded-lg bg-white focus:border-[#3F3FF3] 
-                  ${usernameError ? "border-red-500" : ""}`}
-                />
-                {usernameError && (
-                <p className="text-red-500 text-xs mt-1">{usernameError}</p>
-                )}
-              </div>
+              {/* Campo Email - Para registro y forgot password */}
+              {(currentView === "register" || currentView === "forgot") && (
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-medium text-foreground">
+                    Email *
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="usuario@ejemplo.com"
+                    value={email}
+                    onChange={handleEmailChange}
+                    className={`h-12 border-gray-200 focus:ring-0 shadow-none rounded-lg bg-white focus:border-[#3F3FF3]
+                      ${emailError ? "border-red-500" : ""}`}
+                  />
+                  {emailError && (
+                    <p className="text-red-500 text-xs mt-1">{emailError}</p>
+                  )}
+                </div>
+              )}
 
+              {/* Campo Usuario - Solo para login */}
+              {currentView === "login" && (
+                <div className="space-y-2">
+                  <Label htmlFor="username" className="text-sm font-medium text-foreground">
+                    Email o Nombre de Usuario
+                  </Label>
+                  <Input
+                    id="username"
+                    type="text"
+                    placeholder="user o user@school.com"
+                    value={username}
+                    onChange={handleUsernameChange}
+                    className={`h-12 border-gray-200 focus:ring-0 shadow-none rounded-lg bg-white focus:border-[#3F3FF3] 
+                    ${usernameError ? "border-red-500" : ""}`}
+                  />
+                  {usernameError && (
+                  <p className="text-red-500 text-xs mt-1">{usernameError}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Campo Contraseña - Para login y registro */}
               {currentView !== "forgot" && (
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-sm font-medium text-foreground">
-                    Contraseña
+                    Contraseña *
                   </Label>
                   <div className="relative">
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="Ingresa tu contraseña"
+                      placeholder={currentView === "register" ? "Crea una contraseña segura" : "Ingresa tu contraseña"}
                       value={password}
                       onChange={handlePasswordChange}
                       className={`h-12 pr-10 border-gray-200 focus:ring-0 shadow-none rounded-lg bg-white focus:border-[#3F3FF3]
@@ -191,18 +328,21 @@ export default function LoginPage() {
                 </div>
               )}
 
+              {/* Campo Confirmar Contraseña - Solo para registro */}
               {currentView === "register" && (
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword" className="text-sm font-medium text-foreground">
-                    Confirma tu Contraseña
+                    Confirma tu Contraseña *
                   </Label>
                   <div className="relative">
                     <Input
                       id="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
                       placeholder="Confirma la contraseña"
-                      defaultValue=""
-                      className="h-12 pr-10 border-gray-200 focus:ring-0 shadow-none rounded-lg bg-white focus:border-[#3F3FF3]"
+                      value={confirmPassword}
+                      onChange={handleConfirmPasswordChange}
+                      className={`h-12 pr-10 border-gray-200 focus:ring-0 shadow-none rounded-lg bg-white focus:border-[#3F3FF3]
+                        ${confirmPasswordError ? "border-red-500" : ""}`}
                     />
                     <Button
                       type="button"
@@ -218,9 +358,13 @@ export default function LoginPage() {
                       )}
                     </Button>
                   </div>
+                  {confirmPasswordError && (
+                    <p className="text-red-500 text-xs mt-1">{confirmPasswordError}</p>
+                  )}
                 </div>
               )}
 
+              {/* Opciones adicionales - Solo para login */}
               {currentView === "login" && (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
@@ -228,7 +372,6 @@ export default function LoginPage() {
                       type="checkbox" 
                       id="remember" 
                       className="rounded border-gray-300 cursor-pointer" 
-                      defaultValue=""
                       />
                     <Label htmlFor="remember" className="text-sm text-muted-foreground cursor-pointer">
                       Recuerdame
@@ -247,7 +390,7 @@ export default function LoginPage() {
             </div>
 
             <Button
-              onClick={handleLogin}
+              onClick={handleSubmit}
               className="w-full h-12 text-sm font-medium text-white hover:opacity-90 rounded-lg shadow-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: "#3F3FF3" }}
               disabled={isFormInvalid}
@@ -257,6 +400,7 @@ export default function LoginPage() {
               {currentView === "forgot" && "Enviar Enlace de Restablecimiento"}
             </Button>
 
+            {/* Opciones de login social - No mostrar en forgot password */}
             {currentView !== "forgot" && (
               <>
                 <div className="relative">
@@ -344,7 +488,7 @@ export default function LoginPage() {
                     style={{ color: "#3F3FF3" }}
                     onClick={() => setCurrentView("login")}
                   >
-                    De regreso al incio de sesión.
+                    De regreso al inicio de sesión.
                   </Button>
                 </>
               )}

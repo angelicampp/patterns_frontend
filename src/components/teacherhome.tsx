@@ -372,7 +372,7 @@ const sidebarItems = [
     items: [
       { title: "Reciente", url: "#" },
       { title: "Compartido conmigo", url: "#", badge: "3" },
-      { title: "Fvoritos", url: "#" },
+      { title: "Favoritos", url: "#" },
       { title: "Papelera", url: "#" },
     ],
   },
