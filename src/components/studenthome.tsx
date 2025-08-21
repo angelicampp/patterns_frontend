@@ -1,79 +1,177 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
+  LogOut,
   Bell,
+  BookOpen,
+  Bookmark,
   Brush,
   Camera,
   ChevronDown,
+  Cloud,
+  Code,
+  Crown,
+  Download,
+  FileText,
+  Grid,
+  Heart,
   Home,
   ImageIcon,
   Layers,
   LayoutGrid,
+  Lightbulb,
   Menu,
   MessageSquare,
+  Palette,
   PanelLeft,
+  Play,
   Plus,
   Search,
   Settings,
+  Share2,
   Sparkles,
+  Star,
   Trash,
+  TrendingUp,
   Users,
   Video,
+  Wand2,
+  Clock,
+  Eye,
+  Archive,
+  ArrowUpDown,
+  MoreHorizontal,
+  Type,
+  CuboidIcon,
   X,
-  Minus,
-  User,
-  LogOut,
 } from "lucide-react"
-import AdminRegisterForm from "@/components/adminregisterform"
-import { EditUserForm } from "@/components/edituserform"
-import { Avatar, AvatarImage } from "@/components/ui/avatar"
+import RegisterForm from "@/components/registerform"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Progress } from "@/components/ui/progress"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Tabs, TabsContent } from "@/components/ui/tabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
-
-// Sample data for projects
-const projects = [
+  
+// Sample data for apps
+const apps = [
   {
-    name: "Website Redesign",
-    description: "Complete overhaul of company website",
-    progress: 75,
-    dueDate: "June 15, 2025",
-    members: 4,
-    files: 23,
+    name: "PixelMaster",
+    icon: <ImageIcon className="text-violet-500" />,
+    description: "Advanced image editing and composition",
+    category: "Creative",
+    recent: true,
+    new: false,
+    progress: 100,
   },
   {
-    name: "Mobile App Launch",
-    description: "Design and assets for new mobile application",
+    name: "VectorPro",
+    icon: <Brush className="text-orange-500" />,
+    description: "Professional vector graphics creation",
+    category: "Creative",
+    recent: true,
+    new: false,
+    progress: 100,
+  },
+  {
+    name: "VideoStudio",
+    icon: <Video className="text-pink-500" />,
+    description: "Cinematic video editing and production",
+    category: "Video",
+    recent: true,
+    new: false,
+    progress: 100,
+  },
+  {
+    name: "MotionFX",
+    icon: <Sparkles className="text-blue-500" />,
+    description: "Stunning visual effects and animations",
+    category: "Video",
+    recent: false,
+    new: false,
+    progress: 100,
+  },
+  {
+    name: "PageCraft",
+    icon: <Layers className="text-red-500" />,
+    description: "Professional page design and layout",
+    category: "Creative",
+    recent: false,
+    new: false,
+    progress: 100,
+  },
+  {
+    name: "UXFlow",
+    icon: <LayoutGrid className="text-fuchsia-500" />,
+    description: "Intuitive user experience design",
+    category: "Design",
+    recent: false,
+    new: true,
+    progress: 85,
+  },
+  {
+    name: "PhotoLab",
+    icon: <Camera className="text-teal-500" />,
+    description: "Advanced photo editing and organization",
+    category: "Photography",
+    recent: false,
+    new: false,
+    progress: 100,
+  },
+  {
+    name: "DocMaster",
+    icon: <FileText className="text-red-600" />,
+    description: "Document editing and management",
+    category: "Document",
+    recent: false,
+    new: false,
+    progress: 100,
+  },
+  {
+    name: "WebCanvas",
+    icon: <Code className="text-emerald-500" />,
+    description: "Web design and development",
+    category: "Web",
+    recent: false,
+    new: true,
+    progress: 70,
+  },
+  {
+    name: "3DStudio",
+    icon: <CuboidIcon className="text-indigo-500" />,
+    description: "3D modeling and rendering",
+    category: "3D",
+    recent: false,
+    new: true,
     progress: 60,
-    dueDate: "July 30, 2025",
-    members: 6,
-    files: 42,
   },
   {
-    name: "Brand Identity",
-    description: "New brand guidelines and assets",
-    progress: 90,
-    dueDate: "May 25, 2025",
-    members: 3,
-    files: 18,
+    name: "FontForge",
+    icon: <Type className="text-amber-500" />,
+    description: "Typography and font creation",
+    category: "Typography",
+    recent: false,
+    new: false,
+    progress: 100,
   },
   {
-    name: "Marketing Campaign",
-    description: "Summer promotion materials",
-    progress: 40,
-    dueDate: "August 10, 2025",
-    members: 5,
-    files: 31,
+    name: "ColorPalette",
+    icon: <Palette className="text-purple-500" />,
+    description: "Color scheme creation and management",
+    category: "Design",
+    recent: false,
+    new: false,
+    progress: 100,
   },
 ]
 
+// Sample data for recent files
 const recentFiles = [
   {
     name: "Brand Redesign.pxm",
@@ -140,6 +238,166 @@ const recentFiles = [
   },
 ]
 
+// Sample data for projects
+const projects = [
+  {
+    name: "Website Redesign",
+    description: "Complete overhaul of company website",
+    progress: 75,
+    dueDate: "June 15, 2025",
+    members: 4,
+    files: 23,
+  },
+  {
+    name: "Mobile App Launch",
+    description: "Design and assets for new mobile application",
+    progress: 60,
+    dueDate: "July 30, 2025",
+    members: 6,
+    files: 42,
+  },
+  {
+    name: "Brand Identity",
+    description: "New brand guidelines and assets",
+    progress: 90,
+    dueDate: "May 25, 2025",
+    members: 3,
+    files: 18,
+  },
+  {
+    name: "Marketing Campaign",
+    description: "Summer promotion materials",
+    progress: 40,
+    dueDate: "August 10, 2025",
+    members: 5,
+    files: 31,
+  },
+]
+
+// Sample data for tutorials
+const tutorials = [
+  {
+    title: "Mastering Digital Illustration",
+    description: "Learn advanced techniques for creating stunning digital art",
+    duration: "1h 45m",
+    level: "Advanced",
+    instructor: "Sarah Chen",
+    category: "Illustration",
+    views: "24K",
+  },
+  {
+    title: "UI/UX Design Fundamentals",
+    description: "Essential principles for creating intuitive user interfaces",
+    duration: "2h 20m",
+    level: "Intermediate",
+    instructor: "Michael Rodriguez",
+    category: "Design",
+    views: "56K",
+  },
+  {
+    title: "Video Editing Masterclass",
+    description: "Professional techniques for cinematic video editing",
+    duration: "3h 10m",
+    level: "Advanced",
+    instructor: "James Wilson",
+    category: "Video",
+    views: "32K",
+  },
+  {
+    title: "Typography Essentials",
+    description: "Create beautiful and effective typography for any project",
+    duration: "1h 30m",
+    level: "Beginner",
+    instructor: "Emma Thompson",
+    category: "Typography",
+    views: "18K",
+  },
+  {
+    title: "Color Theory for Designers",
+    description: "Understanding color relationships and psychology",
+    duration: "2h 05m",
+    level: "Intermediate",
+    instructor: "David Kim",
+    category: "Design",
+    views: "41K",
+  },
+]
+
+// Sample data for community posts
+const communityPosts = [
+  {
+    title: "Minimalist Logo Design",
+    author: "Alex Morgan",
+    likes: 342,
+    comments: 28,
+    image: "/placeholder.svg?height=300&width=400",
+    time: "2 days ago",
+  },
+  {
+    title: "3D Character Concept",
+    author: "Priya Sharma",
+    likes: 518,
+    comments: 47,
+    image: "/placeholder.svg?height=300&width=400",
+    time: "1 week ago",
+  },
+  {
+    title: "UI Dashboard Redesign",
+    author: "Thomas Wright",
+    likes: 276,
+    comments: 32,
+    image: "/placeholder.svg?height=300&width=400",
+    time: "3 days ago",
+  },
+  {
+    title: "Product Photography Setup",
+    author: "Olivia Chen",
+    likes: 189,
+    comments: 15,
+    image: "/placeholder.svg?height=300&width=400",
+    time: "5 days ago",
+  },
+]
+
+// Sample data for sidebar navigation
+const sidebarItems = [
+  {
+    title: "Mi Inicio",
+    icon: <Home />,
+    isActive: true,
+  },
+  {
+    title: "Archivos",
+    icon: <FileText />,
+    items: [
+      { title: "Reciente", url: "#" },
+      { title: "Compartido conmigo", url: "#", badge: "3" },
+      { title: "Favoritos", url: "#" },
+      { title: "Papelera", url: "#" },
+    ],
+  },
+  {
+    title: "Proyectos",
+    icon: <Layers />,
+    badge: "4",
+    items: [
+      { title: "Proyectos activos", url: "#", badge: "4" },
+      { title: "Archivados", url: "#" },
+      { title: "Plantillas", url: "#" },
+    ],
+  },
+  {
+    title: "Aprender",
+    icon: <BookOpen />,
+    items: [
+      { title: "Tutoriales", url: "#" },
+      { title: "Cursos", url: "#" },
+      { title: "Webinars", url: "#" },
+      { title: "Recursos", url: "#" },
+    ],
+  },
+]
+
 export function DesignaliCreative() {
   const [progress, setProgress] = useState(0)
   const [notifications, setNotifications] = useState(5)
@@ -147,26 +405,64 @@ export function DesignaliCreative() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({})
-  const [showUserDropdown, setShowUserDropdown] = useState(false) // Dropdown toggle por click
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
-  // Sidebar navigation
+  // Sidebar navigation 
   const sidebarItems = [
     {
       title: "Mi Inicio",
       icon: <Home />,
       isActive: activeTab === "home",
       key: "home",
-      onClick: () => setActiveTab("home"),
+      onClick: () => setActiveTab("home")
     },
     {
-      title: "Administrar usuarios",
-      icon: <Users />,
+      title: "Archivos",
+      icon: <FileText />,
       items: [
-        { title: "Gestionar usuario", key: "manageuser" },
-        { title: "Administrar cursos", key: "managecourses" },
+        { title: "Reciente", url: "#" },
+        { title: "Compartido conmigo", url: "#", badge: "3" },
+        { title: "Favoritos", url: "#" },
+        { title: "Papelera", url: "#" },
+      ],
+    },
+    {
+      title: "Proyectos",
+      icon: <Layers />,
+      badge: "4",
+      isActive: activeTab === "projects",
+      items: [
+        { title: "Proyectos activos", url: "#", badge: "4" },
+        { title: "Archivados", url: "#" },
+        { title: "Plantillas", url: "#" },
+      ],
+    },
+    {
+      title: "Aprender",
+      icon: <BookOpen />,
+      items: [
+        { title: "Tutoriales", url: "#" },
+        { title: "Cursos", url: "#" },
+        { title: "Webinars", url: "#" },
+        { title: "Recursos", url: "#" },
       ],
     },
   ]
+
+  // Cerrar dropdown al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
 
   // Simulate progress loading
   useEffect(() => {
@@ -190,11 +486,9 @@ export function DesignaliCreative() {
   }
 
   const handleLogout = () => {
-    console.log("Logging out...")
-  }
-
-  const toggleUserDropdown = () => {
-    setShowUserDropdown(!showUserDropdown)
+    // Aquí iría la lógica de logout
+    console.log("Cerrando sesión...")
+    // router.push("/login")
   }
 
   return (
@@ -218,8 +512,144 @@ export function DesignaliCreative() {
         <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={() => setMobileMenuOpen(false)} />
       )}
 
-      {/* Sidebar - Mobile & Desktop (igual que antes, sin cambios relevantes) */}
-      {/* ... puedes mantener el mismo código del sidebar ... */}
+      {/* Sidebar - Mobile */}
+      <div
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 w-64 transform bg-background transition-transform duration-300 ease-in-out md:hidden",
+          mobileMenuOpen ? "translate-x-0" : "-translate-x-full",
+        )}
+      >
+        <div className="flex h-full flex-col border-r">
+          <div className="flex items-center justify-between p-4">
+            <div className="flex items-center gap-3">
+              <div>
+                <h2 className="font-semibold">Academica</h2>
+                <p className="text-xs text-muted-foreground">Aplicación</p>
+              </div>
+            </div>
+            <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)}>
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+
+          <div className="px-3 py-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input type="search" placeholder="Buscar..." className="w-full rounded-2xl bg-muted pl-9 pr-4 py-2" />
+            </div>
+          </div>
+
+          <ScrollArea className="flex-1 px-3 py-2">
+            <div className="space-y-1">
+              {sidebarItems.map((item) => (
+                <div key={item.title} className="mb-1">
+                  <button
+                    className={cn(
+                      "flex w-full items-center justify-between rounded-2xl px-3 py-2 text-sm font-medium",
+                      item.isActive ? "bg-primary/10 text-primary" : "hover:bg-muted",
+                    )}
+                    onClick={() => handleSidebarItemClick(item)}
+                  >
+                    <div className="flex items-center gap-3">
+                      {item.icon}
+                      <span>{item.title}</span>
+                    </div>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+
+          <div className="border-t p-3">
+            <div className="space-y-1">
+              <button className="flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted">
+                <Settings className="h-5 w-5" />
+                <span>Configuración</span>
+              </button>
+              <button className="flex w-full items-center justify-between rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage src="/user.svg?height=32&width=32" alt="User" />
+                  </Avatar>
+                  <span>John Doe</span>
+                </div>
+                <Badge variant="outline" className="ml-auto">
+                  Admin
+                </Badge>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Sidebar - Desktop */}
+      <div
+        className={cn(
+          "fixed inset-y-0 left-0 z-30 hidden w-64 transform border-r bg-background transition-transform duration-300 ease-in-out md:block",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full",
+        )}
+      >
+        <div className="flex h-full flex-col">
+          <div className="p-4">
+            <div className="flex items-center gap-3">
+              <img
+              src="/graduation-cap-blue.png"
+              alt="Logo"
+              className="h-15 w-15 object-contain mb-4"
+              />
+              <div>
+                <h2 className="font-semibold">Academica</h2>
+                <p className="text-xs text-muted-foreground">Aplicación</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="px-3 py-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input type="search" placeholder="Buscar..." className="w-full rounded-2xl bg-muted pl-9 pr-4 py-2" />
+            </div>
+          </div>
+
+          <ScrollArea className="flex-1 px-3 py-2">
+            <div className="space-y-1">
+              {sidebarItems.map((item) => (
+                <div key={item.title} className="mb-1">
+                  <button
+                    className={cn(
+                      "flex w-full items-center justify-between rounded-2xl px-3 py-2 text-sm font-medium",
+                      item.isActive ? "bg-primary/10 text-primary" : "hover:bg-muted",
+                    )}
+                    onClick={() => handleSidebarItemClick(item)}
+                  >
+                    <div className="flex items-center gap-3">
+                      {item.icon}
+                      <span>{item.title}</span>
+                    </div>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+
+          <div className="border-t p-3">
+            <div className="space-y-1">
+              <button className="flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted">
+                <Settings className="h-5 w-5" />
+                <span>Configuración</span>
+              </button>
+              <button className="flex w-full items-center justify-between rounded-2xl px-3 py-2 text-sm font-medium hover:bg-muted">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage src="/user.svg?height=32&width=32" alt="User" />
+                  </Avatar>
+                  <span>John Doe</span>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Main Content */}
       <div className={cn("min-h-screen transition-all duration-300 ease-in-out", sidebarOpen ? "md:pl-64" : "md:pl-0")}>
@@ -233,6 +663,7 @@ export function DesignaliCreative() {
           <div className="flex flex-1 items-center justify-between">
             <h1 className="text-xl font-semibold">Aplicación Academica</h1>
             <div className="flex items-center gap-3">
+
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -260,48 +691,57 @@ export function DesignaliCreative() {
                 </Tooltip>
               </TooltipProvider>
 
-              {/* Dropdown del usuario - Toggle por click */}
-              <div className="relative">
-                <Avatar
-                  className="h-9 w-9 border-2 border-primary cursor-pointer transition-all hover:border-primary/80"
-                  onClick={toggleUserDropdown}
+              {/* Avatar con dropdown para logout */}
+              <div className="relative" ref={dropdownRef}>
+                <Button
+                  variant="ghost"
+                  className="flex items-center gap-2 rounded-2xl p-1"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 >
-                  <AvatarImage src="/user.svg?height=40&width=40" alt="User" />
-                </Avatar>
+                  <Avatar className="h-9 w-9 border-2 border-primary">
+                    <AvatarImage src="/user.svg?height=40&width=40" alt="User"/>
+                  </Avatar>
+                  <ChevronDown className="h-4 w-4 transition-transform" style={{ 
+                    transform: isDropdownOpen ? 'rotate(180deg)' : 'none' 
+                  }} />
+                </Button>
 
+                {/* Dropdown menu */}
                 <AnimatePresence>
-                  {showUserDropdown && (
+                  {isDropdownOpen && (
                     <motion.div
                       initial={{ opacity: 0, y: -10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -10, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute right-0 top-full mt-2 w-48 rounded-2xl border bg-background/95 backdrop-blur-md shadow-lg z-50"
+                      className="absolute right-0 top-full mt-2 w-48 rounded-2xl border bg-background p-2 shadow-lg z-50"
                     >
-                      <div className="p-2">
-                        <div className="px-3 py-2 border-b">
-                          <p className="font-medium text-sm">John Doe</p>
-                          <p className="text-xs text-muted-foreground">Administrador</p>
+                      <div className="flex flex-col gap-1">
+                        <div className="px-3 py-2 text-sm font-medium border-b">
+                          <p className="font-semibold">John Doe</p>
+                          <p className="text-muted-foreground">admin@ejemplo.com</p>
                         </div>
-                        <div className="mt-2 space-y-1">
-                          <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm hover:bg-muted transition-colors">
-                            <User className="h-4 w-4" />
-                            <span>Mi Perfil</span>
-                          </button>
-                          <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm hover:bg-muted transition-colors">
-                            <Settings className="h-4 w-4" />
-                            <span>Configuración</span>
-                          </button>
-                          <div className="border-t pt-1 mt-1">
-                            <button
-                              onClick={handleLogout}
-                              className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors"
-                            >
-                              <LogOut className="h-4 w-4" />
-                              <span>Cerrar Sesión</span>
-                            </button>
-                          </div>
-                        </div>
+                        
+                        <Button
+                          variant="ghost"
+                          className="justify-start rounded-xl px-3 py-2 text-sm"
+                          onClick={() => {
+                            setActiveTab("settings")
+                            setIsDropdownOpen(false)
+                          }}
+                        >
+                          <Settings className="mr-2 h-4 w-4" />
+                          Configuración
+                        </Button>
+                        
+                        <Button
+                          variant="ghost"
+                          className="justify-start rounded-xl px-3 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700"
+                          onClick={handleLogout}
+                        >
+                          <LogOut className="mr-2 h-4 w-4" />
+                          Cerrar sesión
+                        </Button>
                       </div>
                     </motion.div>
                   )}
@@ -311,10 +751,101 @@ export function DesignaliCreative() {
           </div>
         </header>
 
-        {/* Main content con Tabs */}
         <main className="flex-1 p-4 md:p-6">
           <Tabs defaultValue="home" value={activeTab} onValueChange={setActiveTab} className="w-full">
-            {/* ... contenido de Tabs igual que tu código anterior ... */}
+            <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <TabsList className="grid w-full max-w-[600px] grid-cols-5 rounded-2xl p-1">
+                <TabsTrigger value="home" className="rounded-xl data-[state=active]:rounded-xl">
+                  Mi Inicio
+                </TabsTrigger>
+                <TabsTrigger value="files" className="rounded-xl data-[state=active]:rounded-xl">
+                  Archivos
+                </TabsTrigger>
+                <TabsTrigger value="projects" className="rounded-xl data-[state=active]:rounded-xl">
+                  Proyectos
+                </TabsTrigger>
+                <TabsTrigger value="learn" className="rounded-xl data-[state=active]:rounded-xl">
+                  Aprender
+                </TabsTrigger>
+                <TabsTrigger value="community" className="rounded-xl data-[state=active]:rounded-xl">
+                  Curso(s)
+                </TabsTrigger>
+              </TabsList>
+              <div className="hidden md:flex gap-2">
+                <Button variant="outline" className="rounded-2xl">
+                  <Download className="mr-2 h-4 w-4" />
+                  Instalar Aplicación
+                </Button>
+                <Button className="rounded-2xl">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Nuevo Proyecto
+                </Button>
+              </div>
+            </div>
+
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <TabsContent value="home" className="space-y-8 mt-0">
+                  <section>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5 }}
+                      className="overflow-hidden rounded-3xl bg-gradient-to-r from-violet-600 via-white-600 to-pink-600 p-8 text-white"
+                    >
+                      <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+                        <div className="space-y-4">
+                          <h2 className="text-3xl font-bold">¡Bienvenid@ Estudiante!</h2>
+                          <p className="max-w-[600px] text-white/80">
+                            Desde este panel puede gestionar sus clases, calificaciones y asistencia, además de acceder a 
+                            los recursos académicos necesarios para su labor estudiante.
+                          </p>
+                          <div className="flex flex-wrap gap-3">
+                            <Button className="rounded-2xl bg-white text-indigo-700 hover:bg-white/90">
+                              Explorar
+                            </Button>
+                            <Button
+                              variant="outline"
+                              className="rounded-2xl bg-transparent border-white text-white hover:bg-white/10"
+                            >
+                              Tutorial
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="hidden lg:block">
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 50, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                            className="relative h-40 w-40"
+                          >
+                            <div className="absolute inset-0 rounded-full bg-white/10 backdrop-blur-md" />
+                            <div className="absolute inset-4 rounded-full bg-white/20" />
+                            <div className="absolute inset-8 rounded-full bg-white/30" />
+                            <div className="absolute inset-12 rounded-full bg-white/40" />
+                            <div className="absolute inset-16 rounded-full bg-white/50" />
+                          </motion.div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </section>
+                </TabsContent>
+
+                <TabsContent value="files" className="space-y-8 mt-0">
+                </TabsContent>
+
+                <TabsContent value="projects" className="space-y-8 mt-0">
+                </TabsContent>
+
+                <TabsContent value="learn" className="space-y-8 mt-0">
+                </TabsContent>
+              </motion.div>
+            </AnimatePresence>
           </Tabs>
         </main>
       </div>
