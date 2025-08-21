@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   Award,
@@ -406,10 +407,41 @@ export function DesignaliCreative() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({})
 
+  // Usuario autenticado
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
+
   // Simulate progress loading
   useEffect(() => {
     const timer = setTimeout(() => setProgress(100), 1000)
     return () => clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    // Obtener usuario autenticado desde localStorage
+    const userData = localStorage.getItem("user")
+    if (!userData) {
+      setLoading(false)
+      router.push("/") // Redirige si no hay usuario
+      return
+    }
+    const parsed = JSON.parse(userData)
+    // Hacer fetch a /users/:id para obtener datos actualizados
+    fetch(`http://localhost:4000/users/${parsed.id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.roleId === 1) {
+          setUser(data)
+        } else {
+          router.push("/") // Redirige si no es estudiante
+        }
+        setLoading(false)
+      })
+      .catch(() => {
+        setLoading(false)
+        router.push("/") // Redirige en caso de error
+      })
   }, [])
 
   const toggleExpanded = (title: string) => {
@@ -418,6 +450,8 @@ export function DesignaliCreative() {
       [title]: !prev[title],
     }))
   }
+
+  if (loading || !user) return null
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-background">
