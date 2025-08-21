@@ -51,6 +51,7 @@ import {
   Delete,
 } from "lucide-react"
 import RegisterForm from "@/components/registerform"
+import { EditUserForm } from "@/components/edituserform"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -562,7 +563,12 @@ export function DesignaliCreative() {
                             <p className="mb-4 text-center text-sm text-muted-foreground">
                               Edita la información relacionada a un usuario existente de la aplicación.
                             </p>
-                            <Button className="rounded-2xl">Administrar Usuario</Button>
+                            <Button
+                              className="rounded-2xl"
+                              onClick={() => setActiveTab("edituser")}
+                            >
+                              Administrar Usuario
+                            </Button>
                           </Card>
                         </motion.div>
                       </div>
@@ -617,6 +623,14 @@ export function DesignaliCreative() {
                         ))}
                       </div>
                     </div>
+                </TabsContent>
+
+                <TabsContent value="edituser" className="space-y-8 mt-0">
+                  <section className="flex items-center justify-center min-h-[80vh]">
+                    <div className="w-full max-w-4xl">
+                      <EditUserForm />
+                    </div>
+                  </section>
                 </TabsContent>
               </motion.div>
             </AnimatePresence>

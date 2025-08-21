@@ -5,7 +5,7 @@ import type React from "react"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { DM_Sans } from "next/font/google"
-
+import { Toaster } from "sonner"
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -14,9 +14,9 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  title: "v0 App",
-  description: "Created with v0",
-  generator: "v0.app",
+  title: "AcademicPlatform",
+  description: "Creado por Angelica, Camilo y Loreann",
+  generator: "AcademicPlatform.app",
 }
 
 export default function RootLayout({
@@ -36,7 +36,10 @@ html {
 }
         `}</style>
       </head>
-      <body className={dmSans.variable}>{children}</body>
+      <body className={dmSans.variable}>
+        {children}
+        <Toaster richColors closeButton />
+      </body>
     </html>
   )
 }
