@@ -1,6 +1,6 @@
 "use client"
 
-import { DesignaliCreative } from "@/components/adminhome" 
+import { DesignaliCreative } from "@/components/studenthome" 
 
  
 export default function Home() {
