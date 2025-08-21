@@ -14,14 +14,17 @@ import { Loader2, Save, User } from "lucide-react"
 
 // Schema de validación para el formulario de edición de usuario
 const editUserSchema = z.object({
-  username: z.string().min(3, "El nombre de usuario debe tener al menos 3 caracteres"),
-  password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres").optional(),
-  email: z.string().email("Ingrese un email válido"),
+  username: z.string().min(3, "El nombre de usuario debe tener al menos 3 caracteres").optional(),
+  email: z.string().optional(),
+  password: z.string().optional(),
   firstname: z.string().optional(),
   lastname: z.string().optional(),
-  state: z.enum(["ACTIVE", "INACTIVE", "SUSPENDED"]),
-  roleId: z.number().min(1, "Seleccione un rol válido"),
-})
+  state: z.enum(["ACTIVE", "INACTIVE", "SUSPENDED"]).optional(),
+  roleId: z.number().min(1, "Seleccione un rol válido").optional(),
+}).refine(
+  data => !!data.username || !!data.email,
+  { message: "Debes ingresar username o email", path: ["username"] }
+);
 
 type EditUserFormData = z.infer<typeof editUserSchema>
 
@@ -29,7 +32,7 @@ interface EditUserFormProps {
   initialData?: {
     username: string
     password?: string
-    email: string
+    email?: string
     firstname?: string | null
     lastname?: string | null
     state: "ACTIVE" | "INACTIVE" | "SUSPENDED"
@@ -52,8 +55,8 @@ export function EditUserForm({ initialData, onSave, isLoading = false }: EditUse
     resolver: zodResolver(editUserSchema),
     defaultValues: {
       username: initialData?.username || "",
-      password: "",
       email: initialData?.email || "",
+      password: "",
       firstname: initialData?.firstname || "",
       lastname: initialData?.lastname || "",
       state: initialData?.state || "ACTIVE",
@@ -104,16 +107,19 @@ export function EditUserForm({ initialData, onSave, isLoading = false }: EditUse
           {/* Username & Email */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Nombre de Usuario *</Label>
+              <Label htmlFor="username">Nombre de Usuario</Label>
               <Input id="username" type="text" {...register("username")} />
               {errors.username && <p className="text-sm text-destructive">{errors.username.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email *</Label>
+              <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" {...register("email")} />
               {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
             </div>
           </div>
+          <p className="text-xs text-muted-foreground">
+            Debes ingresar <b>username</b> o <b>email</b> para identificar el usuario.
+          </p>
 
           {/* Nombre & Apellido */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -162,7 +168,7 @@ export function EditUserForm({ initialData, onSave, isLoading = false }: EditUse
             <div className="space-y-2">
               <Label htmlFor="roleId">Rol *</Label>
               <Select
-                value={watchedRoleId.toString()}
+                value={(watchedRoleId ?? 1).toString()}
                 onValueChange={(value) => setValue("roleId", Number.parseInt(value))}
               >
                 <SelectTrigger>

@@ -76,13 +76,17 @@ export default function LoginPage() {
       localStorage.setItem("user", JSON.stringify(user))
       // Solo redirige si el usuario es estudiante
       if (user.roleId === 1) {
-        router.push("/studenthome") // <-- Redirige aquí, no a /components/studenthome
+        router.push("/studenthome") 
       } else {
         if (user.roleId === 2) {
           router.push("/adminhome")
+        } else {
+        if (user.roleId === 3) {
+          router.push("/teacherhome")
         }
-        // Puedes redirigir a otra página o mostrar un mensaje si lo deseas
-        // router.push("/")
+      
+      }
+        
       }
     } catch (err) {
       console.error("Login fetch error:", err)

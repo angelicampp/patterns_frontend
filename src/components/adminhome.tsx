@@ -64,6 +64,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import router from "next/router"
+import { toast } from "sonner"
 
 // Sample data for projects
 const projects = [
@@ -235,6 +236,49 @@ export function DesignaliCreative() {
     // Aquí iría la lógica de logout
     console.log("Cerrando sesión...")
     // router.push("/login")
+  }
+
+  // Función para actualizar usuario
+  async function handleUpdateUser(data: any) {
+    try {
+      // Buscar el usuario por username o email
+      let userId = null
+      if (data.username) {
+        const res = await fetch(`http://localhost:4000/users/username/${encodeURIComponent(data.username)}`)
+        if (!res.ok) throw new Error("Usuario no encontrado")
+        const user = await res.json()
+        userId = user.id
+      } else if (data.email) {
+        const res = await fetch(`http://localhost:4000/users/email/${encodeURIComponent(data.email)}`)
+        if (!res.ok) throw new Error("Usuario no encontrado")
+        const user = await res.json()
+        userId = user.id
+      } else {
+        throw new Error("Debes ingresar username o email")
+      }
+
+      // Prepara el payload sin username/email
+      const { username, email, ...payload } = data
+
+      // PUT al backend
+      const putRes = await fetch(`http://localhost:4000/users/${userId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+      if (!putRes.ok) {
+        let msg = "Error actualizando usuario"
+        try {
+          const errData = await putRes.json()
+          msg = (Array.isArray(errData?.message) ? errData.message.join(", ") : errData?.message) || errData?.error || msg
+        } catch { msg = await putRes.text() }
+        throw new Error(msg)
+      }
+      toast.success("Usuario actualizado correctamente")
+    } catch (err: any) {
+      toast.error(err?.message || "Error inesperado")
+      throw err
+    }
   }
 
   return (
@@ -715,7 +759,7 @@ export function DesignaliCreative() {
                 <TabsContent value="edituser" className="space-y-8 mt-0">
                   <section className="flex items-center justify-center min-h-[80vh]">
                     <div className="w-full max-w-4xl">
-                      <EditUserForm />
+                      <EditUserForm onSave={handleUpdateUser} />
                     </div>
                   </section>
                 </TabsContent>

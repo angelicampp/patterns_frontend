@@ -8,6 +8,12 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator"
 import { Eye, EyeOff } from "lucide-react";
 
+const roleMap: Record<string, number> = {
+  estudiante: 1,
+  admin: 2,
+  docente: 3,
+}
+
 export default function AdminRegisterForm() {
   const router = useRouter();
 
@@ -18,12 +24,15 @@ export default function AdminRegisterForm() {
   const [email,     setEmail]     = useState("");
   const [password,  setPassword]  = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [userType, setUserType] = useState("estudiante");
+  const [state, setState] = useState(""); // Opcional, si lo quieres usar
 
   // UI
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
   // Errores simples
   const [firstNameError, setFirstNameError] = useState("");
@@ -34,7 +43,6 @@ export default function AdminRegisterForm() {
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
 
   // User type state
-  const [userType, setUserType] = useState("")
   const [userTypeError, setUserTypeError] = useState("")
   
   // User type handler
@@ -48,7 +56,7 @@ export default function AdminRegisterForm() {
     }
   }
   
-      const isFormValid = useMemo(() => {
+  const isFormValid = useMemo(() => {
     return (
       firstName.trim().length >= 2 &&
       lastName.trim().length  >= 2 &&
@@ -91,57 +99,76 @@ export default function AdminRegisterForm() {
     setConfirmPasswordError(v !== password ? "No coinciden" : "");
   }
 
-  async function onSubmit(e: React.FormEvent) {
-  e.preventDefault();
-  if (submitting) return;
-  setSubmitError("");
+  const [form, setForm] = useState({
+    username: "",
+    password: "",
+    email: "",
+    firstname: "",
+    lastname: "",
+    userType: "estudiante", // default
+  })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [success, setSuccess] = useState(false)
 
-  if (!isFormValid) {
-    setSubmitError("Completa los campos correctamente.");
-    return;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  const payload = {
-    username: username.trim(),
-    password,
-    email: email.trim(),
-    firstname: firstName.trim() || undefined,
-    lastname:  lastName.trim()  || undefined,
-  };
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (submitting) return;
+    setSubmitError("");
+    setSubmitSuccess(false);
 
-  console.log("[POST] /users payload:", payload);
-
-  try {
-    setSubmitting(true);
-    const res = await fetch("http://localhost:4000/users", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-      // credentials: "include", // si tu back usa cookies
-    });
-
-    console.log("[POST] /users status:", res.status);
-
-    if (!res.ok) {
-      let msg = "Error creando usuario";
-      try {
-        const data = await res.json();
-        msg = (Array.isArray(data?.message) ? data.message.join(", ") : data?.message) || data?.error || msg;
-      } catch { msg = await res.text(); }
-      throw new Error(msg);
+    // Validación simple
+    if (!username.trim() || !email.trim() || !password || password.length < 4 || confirmPassword !== password) {
+      setSubmitError("Completa los campos correctamente.");
+      return;
     }
 
-    const created = await res.json(); // si quieres ver la respuesta
-    console.log("Register user data:", created);
-    localStorage.setItem("user", JSON.stringify(created)); // <-- Guarda el usuario en localStorage
-    router.push("/dashboard");
-  } catch (err: any) {
-    console.error("[POST] /users error:", err);
-    setSubmitError(err?.message || "Error inesperado");
-  } finally {
-    setSubmitting(false);
+    const payload = {
+      username: username.trim(),
+      password,
+      email: email.trim(),
+      firstname: firstName.trim() || undefined,
+      lastname: lastName.trim() || undefined,
+      roleId: roleMap[userType],
+      state: state || undefined,
+    };
+
+    try {
+      setSubmitting(true);
+      const res = await fetch("http://localhost:4000/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        let msg = "Error creando usuario";
+        try {
+          const data = await res.json();
+          msg = (Array.isArray(data?.message) ? data.message.join(", ") : data?.message) || data?.error || msg;
+        } catch { msg = await res.text(); }
+        throw new Error(msg);
+      }
+
+      setSubmitSuccess(true);
+      setFirstName("");
+      setLastName("");
+      setUsername("");
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
+      setUserType("estudiante");
+      setState("");
+    } catch (err: any) {
+      setSubmitError(err?.message || "Error inesperado");
+    } finally {
+      setSubmitting(false);
+    }
   }
-}
 
   return (
     <form onSubmit={onSubmit} className="w-full max-w-md space-y-6">
@@ -215,6 +242,7 @@ export default function AdminRegisterForm() {
             >
               <option value="" disabled>Selecciona el tipo de usuario</option>
               <option value="estudiante">Estudiante</option>
+              <option value="admin">Administrador</option>
               <option value="docente">Docente</option>
             </select>
             {userTypeError && (
@@ -226,6 +254,7 @@ export default function AdminRegisterForm() {
       </div>
   
       {submitError && <p className="text-red-600 text-sm">{submitError}</p>}
+      {submitSuccess && <p className="text-green-600 text-sm">Usuario creado correctamente</p>}
 
       <Button type="submit" disabled={!isFormValid || submitting}
         className="w-full h-12 text-sm font-medium text-white disabled:opacity-50"
