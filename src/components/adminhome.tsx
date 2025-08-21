@@ -177,6 +177,7 @@ export function DesignaliCreative() {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({})
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  
 
   // Sidebar navigation - Movido aquí para usar setActiveTab
   const sidebarItems = [

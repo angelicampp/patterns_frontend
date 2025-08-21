@@ -48,6 +48,7 @@ import {
   X,
 } from "lucide-react"
 import RegisterForm from "@/components/registerform"
+import { useRouter } from "next/navigation"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -407,6 +408,7 @@ export function DesignaliCreative() {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({})
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const router = useRouter()
 
   // Sidebar navigation 
   const sidebarItems = [
@@ -457,11 +459,13 @@ export function DesignaliCreative() {
         setIsDropdownOpen(false)
       }
     }
-
     document.addEventListener("mousedown", handleClickOutside)
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  useEffect(() => {
+    const timer = setTimeout(() => setProgress(100), 1000)
+    return () => clearTimeout(timer)
   }, [])
 
   // Simulate progress loading
@@ -485,10 +489,32 @@ export function DesignaliCreative() {
     }
   }
 
-  const handleLogout = () => {
-    // Aquí iría la lógica de logout
-    console.log("Cerrando sesión...")
-    // router.push("/login")
+  const handleLogout = async () => {
+    try {
+      const raw = localStorage.getItem("user")
+      const user = raw ? JSON.parse(raw) : null
+
+      if (!user?.id) {
+        localStorage.clear()
+        router.push("/login")
+        return
+      }
+
+      // Llamada al backend
+      await fetch("http://localhost:3000/auth/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: user.id }),
+      })
+
+      // Limpieza en el cliente
+      localStorage.clear()
+      router.push("/")
+    } catch (err) {
+      console.error("Error al cerrar sesión:", err)
+      localStorage.clear()
+      router.push("/")
+    }
   }
 
   return (
@@ -708,44 +734,32 @@ export function DesignaliCreative() {
 
                 {/* Dropdown menu */}
                 <AnimatePresence>
-                  {isDropdownOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                      transition={{ duration: 0.2 }}
-                      className="absolute right-0 top-full mt-2 w-48 rounded-2xl border bg-background p-2 shadow-lg z-50"
-                    >
-                      <div className="flex flex-col gap-1">
-                        <div className="px-3 py-2 text-sm font-medium border-b">
-                          <p className="font-semibold">John Doe</p>
-                          <p className="text-muted-foreground">admin@ejemplo.com</p>
-                        </div>
-                        
-                        <Button
-                          variant="ghost"
-                          className="justify-start rounded-xl px-3 py-2 text-sm"
-                          onClick={() => {
-                            setActiveTab("settings")
-                            setIsDropdownOpen(false)
-                          }}
-                        >
-                          <Settings className="mr-2 h-4 w-4" />
-                          Configuración
-                        </Button>
-                        
-                        <Button
-                          variant="ghost"
-                          className="justify-start rounded-xl px-3 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700"
-                          onClick={handleLogout}
-                        >
-                          <LogOut className="mr-2 h-4 w-4" />
-                          Cerrar sesión
-                        </Button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+  {isDropdownOpen && (
+    <motion.div
+      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+      transition={{ duration: 0.2 }}
+      className="absolute right-0 top-full mt-2 w-48 rounded-2xl border bg-background p-2 shadow-lg z-50"
+    >
+      <div className="flex flex-col gap-1">
+        <div className="px-3 py-2 text-sm font-medium border-b">
+          <p className="font-semibold">John Doe</p>
+          <p className="text-muted-foreground">admin@ejemplo.com</p>
+        </div>
+
+        <Button
+          variant="ghost"
+          className="justify-start rounded-xl px-3 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700"
+          onClick={handleLogout}
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          Cerrar sesión
+        </Button>
+      </div>
+    </motion.div>
+  )}
+</AnimatePresence>
               </div>
             </div>
           </div>
