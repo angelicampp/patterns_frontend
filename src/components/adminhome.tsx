@@ -579,7 +579,7 @@ export function DesignaliCreative() {
                 <TabsContent value="createuser" className="space-y-8 mt-0">
                   <section className="flex items-center justify-center min-h-[80vh]">
                     <div className="w-full max-w-md">
-                      <RegisterForm onSwitchToLogin={() => { }} />
+                      <RegisterForm />
                     </div>
                   </section>
                 </TabsContent>

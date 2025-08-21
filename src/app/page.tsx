@@ -76,8 +76,11 @@ export default function LoginPage() {
       localStorage.setItem("user", JSON.stringify(user))
       // Solo redirige si el usuario es estudiante
       if (user.roleId === 1) {
-        router.push("/studenthome") // <-- Cambia aquí la ruta al landing de estudiante
+        router.push("/studenthome") // <-- Redirige aquí, no a /components/studenthome
       } else {
+        if (user.roleId === 2) {
+          router.push("/adminhome")
+        }
         // Puedes redirigir a otra página o mostrar un mensaje si lo deseas
         // router.push("/")
       }

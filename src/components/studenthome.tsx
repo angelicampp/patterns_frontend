@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   Award,
@@ -410,7 +409,6 @@ export function DesignaliCreative() {
   // Usuario autenticado
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const router = useRouter()
 
   // Simulate progress loading
   useEffect(() => {
@@ -423,7 +421,6 @@ export function DesignaliCreative() {
     const userData = localStorage.getItem("user")
     if (!userData) {
       setLoading(false)
-      router.push("/") // Redirige si no hay usuario
       return
     }
     const parsed = JSON.parse(userData)
@@ -433,15 +430,10 @@ export function DesignaliCreative() {
       .then((data) => {
         if (data.roleId === 1) {
           setUser(data)
-        } else {
-          router.push("/") // Redirige si no es estudiante
         }
         setLoading(false)
       })
-      .catch(() => {
-        setLoading(false)
-        router.push("/") // Redirige en caso de error
-      })
+      .catch(() => setLoading(false))
   }, [])
 
   const toggleExpanded = (title: string) => {
