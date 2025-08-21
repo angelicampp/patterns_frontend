@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   Award,
@@ -49,8 +49,9 @@ import {
   Minus,
   User,
   Delete,
+  LogOut,
 } from "lucide-react"
-import RegisterForm from "@/components/registerform"
+import AdminRegisterForm from "@/components/adminregisterform"
 import { EditUserForm } from "@/components/edituserform"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -62,24 +63,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
-
-// Sidebar navigation
-const sidebarItems = [
-  {
-    title: "Mi Inicio",
-    icon: <Home />,
-    isActive: true,
-    key: "home",
-  },
-  {
-    title: "Administrar usuarios",
-    icon: <Users />,
-    items: [
-      { title: "Gestionar usuario", key: "manageuser" },
-      { title: "Administrar cursos", key: "managecourses" },
-    ],
-  },
-]
+import router from "next/router"
 
 // Sample data for projects
 const projects = [
@@ -190,6 +174,41 @@ export function DesignaliCreative() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({})
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  // Sidebar navigation - Movido aquí para usar setActiveTab
+  const sidebarItems = [
+    {
+      title: "Mi Inicio",
+      icon: <Home />,
+      isActive: activeTab === "home",
+      key: "home",
+      onClick: () => setActiveTab("home")
+    },
+    {
+      title: "Administrar usuarios",
+      icon: <Users />,
+      items: [
+        { title: "Gestionar usuario", key: "manageuser" },
+        { title: "Administrar cursos", key: "managecourses" },
+      ],
+    },
+  ]
+
+  // Cerrar dropdown al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
 
   // Simulate progress loading
   useEffect(() => {
@@ -202,6 +221,20 @@ export function DesignaliCreative() {
       ...prev,
       [title]: !prev[title],
     }))
+  }
+
+  const handleSidebarItemClick = (item: any) => {
+    if (item.onClick) {
+      item.onClick()
+    } else if (item.items) {
+      toggleExpanded(item.title)
+    }
+  }
+
+  const handleLogout = () => {
+    // Aquí iría la lógica de logout
+    console.log("Cerrando sesión...")
+    // router.push("/login")
   }
 
   return (
@@ -261,7 +294,7 @@ export function DesignaliCreative() {
                       "flex w-full items-center justify-between rounded-2xl px-3 py-2 text-sm font-medium",
                       item.isActive ? "bg-primary/10 text-primary" : "hover:bg-muted",
                     )}
-                    onClick={() => item.items && toggleExpanded(item.title)}
+                    onClick={() => handleSidebarItemClick(item)}
                   >
                     <div className="flex items-center gap-3">
                       {item.icon}
@@ -280,12 +313,13 @@ export function DesignaliCreative() {
                   {item.items && expandedItems[item.title] && (
                     <div className="mt-1 ml-6 space-y-1 border-l pl-3">
                       {item.items.map((subItem) => (
-                        <a
+                        <button
                           key={subItem.title}
-                          className="flex items-center justify-between rounded-2xl px-3 py-2 text-sm hover:bg-muted"
+                          onClick={() => setActiveTab(subItem.key)}
+                          className="flex w-full items-center justify-between rounded-2xl px-3 py-2 text-sm hover:bg-muted"
                         >
                           {subItem.title}
-                        </a>
+                        </button>
                       ))}
                     </div>
                   )}
@@ -354,7 +388,7 @@ export function DesignaliCreative() {
                       "flex w-full items-center justify-between rounded-2xl px-3 py-2 text-sm font-medium",
                       item.isActive ? "bg-primary/10 text-primary" : "hover:bg-muted",
                     )}
-                    onClick={() => item.items && toggleExpanded(item.title)}
+                    onClick={() => handleSidebarItemClick(item)}
                   >
                     <div className="flex items-center gap-3">
                       {item.icon}
@@ -447,9 +481,62 @@ export function DesignaliCreative() {
                 </Tooltip>
               </TooltipProvider>
 
-              <Avatar className="h-9 w-9 border-2 border-primary">
-                <AvatarImage src="/user.svg?height=40&width=40" alt="User"/>
-              </Avatar>
+              {/* Avatar con dropdown para logout */}
+              <div className="relative" ref={dropdownRef}>
+                <Button
+                  variant="ghost"
+                  className="flex items-center gap-2 rounded-2xl p-1"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                >
+                  <Avatar className="h-9 w-9 border-2 border-primary">
+                    <AvatarImage src="/user.svg?height=40&width=40" alt="User"/>
+                  </Avatar>
+                  <ChevronDown className="h-4 w-4 transition-transform" style={{ 
+                    transform: isDropdownOpen ? 'rotate(180deg)' : 'none' 
+                  }} />
+                </Button>
+
+                {/* Dropdown menu */}
+                <AnimatePresence>
+                  {isDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute right-0 top-full mt-2 w-48 rounded-2xl border bg-background p-2 shadow-lg z-50"
+                    >
+                      <div className="flex flex-col gap-1">
+                        <div className="px-3 py-2 text-sm font-medium border-b">
+                          <p className="font-semibold">John Doe</p>
+                          <p className="text-muted-foreground">admin@ejemplo.com</p>
+                        </div>
+                        
+                        <Button
+                          variant="ghost"
+                          className="justify-start rounded-xl px-3 py-2 text-sm"
+                          onClick={() => {
+                            setActiveTab("settings")
+                            setIsDropdownOpen(false)
+                          }}
+                        >
+                          <Settings className="mr-2 h-4 w-4" />
+                          Configuración
+                        </Button>
+                        
+                        <Button
+                          variant="ghost"
+                          className="justify-start rounded-xl px-3 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700"
+                          onClick={handleLogout}
+                        >
+                          <LogOut className="mr-2 h-4 w-4" />
+                          Cerrar sesión
+                        </Button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           </div>
         </header>
@@ -579,7 +666,7 @@ export function DesignaliCreative() {
                 <TabsContent value="createuser" className="space-y-8 mt-0">
                   <section className="flex items-center justify-center min-h-[80vh]">
                     <div className="w-full max-w-md">
-                      <RegisterForm />
+                      <AdminRegisterForm />
                     </div>
                   </section>
                 </TabsContent>
@@ -632,6 +719,23 @@ export function DesignaliCreative() {
                     </div>
                   </section>
                 </TabsContent>
+
+                <TabsContent value="settings" className="space-y-8 mt-0">
+                  <section>
+                    <h2 className="text-2xl font-bold mb-4">Configuración</h2>
+                    <Card className="rounded-3xl">
+                      <CardHeader>
+                        <CardTitle>Configuración de la cuenta</CardTitle>
+                        <CardDescription>
+                          Gestiona la configuración de tu cuenta de administrador
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <p>Aquí irían las opciones de configuración de la cuenta.</p>
+                      </CardContent>
+                    </Card>
+                  </section>
+                </TabsContent>
               </motion.div>
             </AnimatePresence>
           </Tabs>
@@ -640,4 +744,3 @@ export function DesignaliCreative() {
     </div>
   )
 }
-

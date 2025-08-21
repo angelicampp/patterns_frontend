@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator"
 import { Eye, EyeOff } from "lucide-react";
 
-export default function RegisterForm() {
+export default function AdminRegisterForm() {
   const router = useRouter();
 
   // Campos
@@ -146,7 +146,13 @@ export default function RegisterForm() {
   return (
     <form onSubmit={onSubmit} className="w-full max-w-md space-y-6">
       <div className="space-y-6">
-          <div className="space-y-2 text-center"> 
+          <div className="space-y-2 text-center">
+            <h2 className="text-3xl text-foreground mb-3">
+              Crear Nuevo Usuario
+            </h2>
+            <p className="text-muted-foreground mb-8">
+              Completa los campos para crear un nuevo usuario.
+            </p>
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="firstName">Nombre *</Label>
@@ -195,6 +201,25 @@ export default function RegisterForm() {
               </Button>
             </div>
             {confirmPasswordError && <p className="text-red-500 text-xs mt-1">{confirmPasswordError}</p>}
+          </div>
+          <div>
+            <Label htmlFor="userType" className="text-sm font-medium text-foreground">
+              Tipo de Usuario *
+            </Label>
+            <select
+              id="userType"
+              value={userType}
+              onChange={handleUserTypeChange}
+              className={`h-12 w-full px-3 py-2 border rounded-lg bg-white focus:outline-none focus:ring-0 text-sm
+              ${userTypeError ? "border-red-500" : "border-gray-200 focus:border-[#3F3FF3]"}`}
+            >
+              <option value="" disabled>Selecciona el tipo de usuario</option>
+              <option value="estudiante">Estudiante</option>
+              <option value="docente">Docente</option>
+            </select>
+            {userTypeError && (
+              <p className="text-red-500 text-xs mt-1">{userTypeError}</p>
+            )}
           </div>
         </div>
       </div>
