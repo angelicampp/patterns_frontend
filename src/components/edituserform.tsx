@@ -89,7 +89,7 @@ export function EditUserForm({ user, onSave, ...props }: EditUserFormProps) {
             roleName = "administrador"
             break
           case 3:
-            roleName = "profesor"
+            roleName = "docente"
             break
           default:
             roleName = "estudiante"

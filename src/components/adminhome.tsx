@@ -718,43 +718,51 @@ export function DesignaliCreative() {
 
                 <TabsContent value="deleteuser" className="space-y-8 mt-0">
                   <div className="rounded-3xl border overflow-hidden">
-                      <div className="bg-muted/50 p-3 hidden md:grid md:grid-cols-12 text-sm font-medium">
-                        <div className="col-span-6">Name</div>
-                        <div className="col-span-2">ID</div>
-                        <div className="col-span-2">Tipo de usuario</div>
-                      </div>
-                      <div className="divide-y">
-                        {recentFiles.map((file) => (
-                          <motion.div
-                            key={file.name}
-                            whileHover={{ backgroundColor: "rgba(0,0,0,0.02)" }}
-                            className="p-4 md:grid md:grid-cols-12 items-center flex flex-col md:flex-row gap-3 md:gap-0"
-                          >
-                            <div className="col-span-6 flex items-center gap-3 w-full md:w-auto">
-                              <div>
-                                {/* nombre de usuario */}
-                                <p className="font-medium">{file.name}</p>
-                                {file.shared && (
-                                  <div className="flex items-center text-xs text-muted-foreground">
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            {/* id */}
-                            <div className="col-span-2 text-sm md:text-base">{file.app}</div>
-                            {/* user type */}
-                            <div className="col-span-2 text-sm md:text-base">{file.size}</div>
-                            <div className="col-span-2 flex items-center justify-between w-full md:w-auto">
-                              <div className="flex gap-1">
-                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl">
-                                  <Trash className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </div>
-                          </motion.div>
-                        ))}
-                      </div>
+                    <div className="bg-muted/50 p-3 hidden md:grid md:grid-cols-10 text-sm font-medium">
+                      <div className="col-span-6">Nombre</div>
+                      <div className="col-span-2">ID</div>
+                      <div className="col-span-2">Acciones</div>
                     </div>
+                    <div className="divide-y">
+                      {users.map((user) => (
+                        <motion.div
+                          key={user.id}
+                          whileHover={{ backgroundColor: "rgba(0,0,0,0.02)" }}
+                          className="p-4 md:grid md:grid-cols-10 items-center flex flex-col md:flex-row gap-3 md:gap-0"
+                        >
+                          <div className="col-span-6 flex items-center gap-3 w-full md:w-auto">
+                            <p className="font-medium">{user.username}</p>
+                          </div>
+                          <div className="col-span-2 text-sm md:text-base">{user.id}</div>
+                          <div className="col-span-2 flex items-center justify-between w-full md:w-auto">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 rounded-xl"
+                              onClick={async () => {
+                                const userIdLogged = localStorage.getItem("userId") || ""
+                                try {
+                                  const res = await fetch(`http://localhost:4000/users/${user.id}`, {
+                                    method: "DELETE",
+                                    headers: {
+                                      "x-user-id": userIdLogged,
+                                    },
+                                  })
+                                  if (!res.ok) throw new Error("No se pudo eliminar el usuario")
+                                  toast.success("Usuario eliminado correctamente")
+                                  setUsers((prev) => prev.filter((u) => u.id !== user.id))
+                                } catch (err) {
+                                  toast.error("Error al eliminar usuario")
+                                }
+                              }}
+                            >
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="edituser" className="space-y-8 mt-0">
