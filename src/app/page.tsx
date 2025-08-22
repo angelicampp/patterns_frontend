@@ -55,6 +55,12 @@ export default function LoginPage() {
 
   const isFormInvalid = isLoginFormInvalid || isForgotFormInvalid
   
+  // Ejemplo de login
+  interface LoginCredentials {
+    username: string
+    password: string
+  }
+
   const handleLogin = async () => {
     try {
       const res = await fetch("http://localhost:4000/auth/login", {
@@ -62,34 +68,31 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           identificador: username,
-          password: password,
+          password: password
         }),
       })
-      console.log("Login response status:", res.status)
       if (!res.ok) {
-        const errorText = await res.text()
-        console.error("Login error:", errorText)
+        const error = await res.json()
+        alert(error.message || "Credenciales incorrectas")
         return
       }
       const user = await res.json()
-      console.log("Login user data:", user)
-      localStorage.setItem("user", JSON.stringify(user))
-      // Solo redirige si el usuario es estudiante
+      localStorage.setItem("userId", user.id)
+      localStorage.setItem("roleId", user.roleId)
+
+      // Redirección según el rol
       if (user.roleId === 1) {
-        router.push("/studenthome") 
+        router.push("/studenthome")
+      } else if (user.roleId === 2) {
+        router.push("/adminhome")
+      } else if (user.roleId === 3) {
+        router.push("/teacherhome")
       } else {
-        if (user.roleId === 2) {
-          router.push("/adminhome")
-        } else {
-        if (user.roleId === 3) {
-          router.push("/teacherhome")
-        }
-      
-      }
-        
+        router.push("/studenthome") // Por defecto
       }
     } catch (err) {
       console.error("Login fetch error:", err)
+      alert("Error de conexión")
     }
   }
 

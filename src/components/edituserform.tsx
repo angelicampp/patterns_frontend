@@ -29,7 +29,8 @@ const editUserSchema = z.object({
 type EditUserFormData = z.infer<typeof editUserSchema>
 
 interface EditUserFormProps {
-  initialData?: {
+  user?: {
+    id: number
     username: string
     password?: string
     email?: string
@@ -40,9 +41,10 @@ interface EditUserFormProps {
   }
   onSave?: (data: EditUserFormData) => void
   isLoading?: boolean
+  onCancel?: () => void
 }
 
-export function EditUserForm({ initialData, onSave, isLoading = false }: EditUserFormProps) {
+export function EditUserForm({ user, onSave, ...props }: EditUserFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const {
@@ -54,13 +56,13 @@ export function EditUserForm({ initialData, onSave, isLoading = false }: EditUse
   } = useForm<EditUserFormData>({
     resolver: zodResolver(editUserSchema),
     defaultValues: {
-      username: initialData?.username || "",
-      email: initialData?.email || "",
+      username: user?.username || "",
+      email: user?.email || "",
       password: "",
-      firstname: initialData?.firstname || "",
-      lastname: initialData?.lastname || "",
-      state: initialData?.state || "ACTIVE",
-      roleId: initialData?.roleId || 1,
+      firstname: user?.firstname || "",
+      lastname: user?.lastname || "",
+      state: user?.state || "ACTIVE",
+      roleId: user?.roleId || 1,
     },
   })
 
@@ -70,13 +72,49 @@ export function EditUserForm({ initialData, onSave, isLoading = false }: EditUse
   const onSubmit = async (data: EditUserFormData) => {
     setIsSubmitting(true)
     try {
-      const submitData = { ...data }
-      if (!submitData.password || submitData.password.trim() === "") {
-        delete submitData.password
+      const bodyData: any = { ...data }
+      if (!bodyData.password || bodyData.password.trim() === "") {
+        delete bodyData.password
       }
 
+      // Transforma roleId a roles: string[]
+      if (bodyData.roleId) {
+        // Asigna el nombre del rol según el id
+        let roleName = ""
+        switch (bodyData.roleId) {
+          case 1:
+            roleName = "estudiante"
+            break
+          case 2:
+            roleName = "administrador"
+            break
+          case 3:
+            roleName = "profesor"
+            break
+          default:
+            roleName = "estudiante"
+        }
+        bodyData.roles = [roleName]
+        delete bodyData.roleId
+      }
+
+      const userId = user?.id
+      if (!userId) throw new Error("No se encontró el id del usuario")
+      const UserIdlogged = localStorage.getItem("userId") || ""
+
+      const response = await fetch(`http://localhost:4000/users/${userId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": UserIdlogged,
+        },
+        body: JSON.stringify(bodyData),
+      })
+
+      if (!response.ok) throw new Error("Error en la actualización")
+
       if (onSave) {
-        await onSave(submitData)
+        await onSave(bodyData)
       }
 
       toast.success("Usuario actualizado", {
@@ -175,10 +213,9 @@ export function EditUserForm({ initialData, onSave, isLoading = false }: EditUse
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">Administrador</SelectItem>
-                  <SelectItem value="2">Usuario</SelectItem>
-                  <SelectItem value="3">Moderador</SelectItem>
-                  <SelectItem value="4">Invitado</SelectItem>
+                  <SelectItem value="1">Estudiante</SelectItem>
+                  <SelectItem value="2">Administrador</SelectItem>
+                  <SelectItem value="3">Profesor</SelectItem>
                 </SelectContent>
               </Select>
               {errors.roleId && <p className="text-sm text-destructive">{errors.roleId.message}</p>}
@@ -187,7 +224,12 @@ export function EditUserForm({ initialData, onSave, isLoading = false }: EditUse
 
           {/* Botón */}
           <div className="flex justify-end space-x-2 pt-4">
-            <Button type="submit" disabled={isSubmitting || isLoading} className="min-w-[120px]">
+            {props.onCancel && (
+              <Button type="button" variant="outline" onClick={props.onCancel}>
+                Cancelar
+              </Button>
+            )}
+            <Button type="submit" disabled={isSubmitting || props.isLoading} className="min-w-[120px]">
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
